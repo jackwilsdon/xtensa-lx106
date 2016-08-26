@@ -38,12 +38,3 @@ run_docker() {
 fake_docker() {
   print_raw "${DOCKER}" "$@"
 }
-
-# usage: arg_or_default arg default
-arg_or_default() {
-  if [[ -n "$1" ]]; then
-    echo "$1"
-  else
-    echo "$2"
-  fi
-}

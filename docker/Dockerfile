@@ -54,6 +54,9 @@ RUN su build -c " \
         sed -i'' \
             's/^CT_PREFIX_DIR=.*$/CT_PREFIX_DIR=\"\/tmp\/xtensa-lx106-elf\"/g' \
             .config && \
+        echo 'CT_WANTS_STATIC_LINK=y' >> .config && \
+        echo 'CT_STATIC_TOOLCHAIN=y' >> .config && \
+        echo 'CT_CC_GCC_STATIC_LIBSTDCXX=y' >> .config && \
         ct-ng build \
     " && \
     cd / && \

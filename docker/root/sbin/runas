@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+#
+# Script to run a command as another user
+
+from os import path as _path
+import sys as _sys
+import pwd as _pwd
+import os as _os
+
+
+class Runner(object):
+    def __init__(self, name='runas'):
+        self.name = name
+
+    def raw_message(self, message='', *args, **kwargs):
+        print(str(message).format(*args, **kwargs))
+
+    def raw_error(self, message='', *args, **kwargs):
+        print(str(message).format(*args, **kwargs), file=_sys.stderr)
+
+    def message(self, message='', *args, **kwargs):
+        self.raw_message('{}: {}', self.name,
+                         str(message).format(*args, **kwargs))
+
+    def error(self, message='', *args, **kwargs):
+        self.raw_error('{}: {}', self.name,
+                       str(message).format(*args, **kwargs))
+
+    def print_usage(self, printer=None):
+        if printer is None:
+            printer = self.raw_message
+
+        printer('usage: {} USER COMMAND [ARGS...]', self.name)
+
+    def get_user(self, username):
+        try:
+            return _pwd.getpwnam(username)
+        except KeyError:
+            return None
+
+    def run_as(self, user, command, *args):
+        _os.initgroups(user.pw_name, user.pw_gid)
+
+        _os.setgid(user.pw_gid)
+        _os.setuid(user.pw_uid)
+
+        _os.environ.update({
+            'USER': user.pw_name,
+            'HOME': user.pw_dir,
+            'UID': str(user.pw_uid)
+        })
+
+        if 'RUNDIR' in _os.environ:
+            _os.chdir(_os.environ['RUNDIR'])
+        else:
+            _os.chdir(user.pw_dir)
+
+        _os.execvp(command, (command,) + args)
+
+    def main(self, username, command, *args):
+        user = self.get_user(username)
+
+        if user is None:
+            raise KeyError('no such user \"{}\"'.format(username))
+
+        self.run_as(user, command, *args)
+
+    def parse_arguments(self, args):
+        if len(args) < 2:
+            self.print_usage()
+            return 1
+
+        username = args[0]
+        command = args[1]
+        command_args = args[2:]
+
+        try:
+            return self.main(username, command, *command_args)
+        except OSError as error:
+            self.error('failed to execute {}: {}', command,
+                       error.strerror.lower())
+        except Exception as error:
+            self.error('failed to execute {}: {}', command, str(error).lower())
+
+    @classmethod
+    def parse_cli_arguments(cls, args=_sys.argv):
+        if len(args) < 1:
+            raise ValueError('args must not be empty')
+
+        filename = _path.basename(args[0])
+
+        return cls(filename).parse_arguments(args[1:])
+
+
+if __name__ == '__main__':
+    _sys.exit(Runner.parse_cli_arguments())

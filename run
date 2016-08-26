@@ -1,0 +1,135 @@
+#!/usr/bin/env bash
+#
+# Run xtensa-lx106-elf container
+
+readonly CURRENT_SCRIPT=$(basename -- "${BASH_SOURCE[0]}")
+readonly CURRENT_DIRECTORY=$(cd "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+
+source "${CURRENT_DIRECTORY}/scripts/config.sh"
+source "${CURRENT_DIRECTORY}/scripts/util.sh"
+
+# usage: usage ["printer"]
+usage() {
+  if [[ $# > 1 ]]; then
+    error_raw 'usage: too many arguments'
+    return 1
+  fi
+
+  local printer=${1:-print_raw}
+
+  ${printer} "usage: ${CURRENT_SCRIPT} [-h] [-n] [-d DATA_DIRECTORY]" \
+             '[-t TAG] ARGS...'
+}
+
+# usage: full_usage ["printer"]
+full_usage() {
+  if [[ $# > 1 ]]; then
+    error_raw 'full_usage: too many arguments'
+    return 1
+  fi
+
+  local printer=${1:-print_raw}
+
+  usage "${printer}"
+  ${printer}
+  ${printer} 'Run script for xtensa-lx106-elf development container'
+  ${printer}
+  ${printer} 'arguments:'
+  ${printer} '  -h                    show this help message and exit'
+  ${printer} '  -n                    don'"'"'t run docker and just print the'
+  ${printer} '                        command instead'
+  ${printer} '  -d DATA_DIRECTORY     mount point for /mnt/data inside the'
+  ${printer} '                        container'
+  ${printer} '  -t TAG                the tag of the image to run'
+  ${printer} '  ARGS...               the command to run in the container'
+  ${printer}
+  ${printer} 'environment variables:'
+  ${printer} '  NAME                  the name of the container to run'
+  ${printer} '  TAG                   the tag of the container'
+  ${printer} '  MOUNT                 the mount point for /mnt/data inside the'
+  ${printer} '                        container'
+  ${printer} '  DOCKER                the location of the docker binary'
+  ${printer}
+  ${printer} 'environment variables can be overridden by normal arguments'
+}
+
+# usage: run_image "name" "tag" "fake" "mountpoint" args...
+run_image() {
+  if [[ $# < 4 ]]; then
+    error_raw 'run_image: not enough arguments'
+    return 1
+  fi
+
+  local executor=run_docker
+
+  # Select an executor based on fake-ness
+  if [[ "$3" = 1 ]]; then
+    executor=fake_docker
+  elif [[ "$3" != 0 ]]; then
+    error_raw 'run_image: fake must be either 1 or 0'
+  fi
+
+  # Default run arguments
+  local arguments=(--rm --interactive --tty)
+
+  # Add volume to arguments if we need to
+  if [[ -n "$4" ]]; then
+    arguments+=(-v "$4:/mnt/data")
+  fi
+
+  # Add name to arguments
+  arguments+=("$1:$2")
+
+  # Remove the first four arguments from the argument list so we're left with
+  # just args
+  shift 4
+
+  # If there are any arguments left, add them to the command
+  if [[ "$#" -gt 0 ]]; then
+    arguments+=("$@")
+  fi
+
+  # Run docker with the provided arguments
+  ${executor} run "${arguments[@]}"
+}
+
+# usage: main [-h] [TAG]
+main() {
+  local opt_fake=0
+  local opt_mount=${MOUNT}
+  local opt_tag=${TAG}
+
+  while getopts ':hnd:t:' OPT; do
+    case ${OPT} in
+      h) full_usage; return 0 ;;
+      n) opt_fake=1 ;;
+      d) opt_mount=${OPTARG} ;;
+      t) opt_tag=${OPTARG} ;;
+      ?) error "illegal option: ${OPTARG}"; usage error_raw; return 1 ;;
+    esac
+  done
+
+  # Ensure the mount point is valid
+  if [[ -n "${opt_mount}" && "${opt_mount}" = "${opt_mount#/}" ]]; then
+    error 'mount point must be absolute'
+    return 1
+  fi
+
+  # Check whether or not COMMAND was provided
+  if [[ $((OPTIND - 1)) = $# ]]; then
+    error 'missing ARGS'
+    usage error_raw
+    return 1
+  fi
+
+  # Remove everything leading up to COMMAND argument
+  shift $((OPTIND - 1))
+
+  # Run the image
+  run_image "${NAME}" "${opt_tag}" "${opt_fake}" "${opt_mount}" "$@"
+}
+
+if [[ "$0" = "${BASH_SOURCE[0]}" ]]; then
+  main "$@"
+  exit $?
+fi

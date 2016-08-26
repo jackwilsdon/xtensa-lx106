@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+#
+# Run xtensa-lx106-elf container
+
+readonly CURRENT_SCRIPT=$(basename -- "${BASH_SOURCE[0]}")
+readonly CURRENT_DIRECTORY=$(cd "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+
+source "${CURRENT_DIRECTORY}/scripts/config.sh"
+source "${CURRENT_DIRECTORY}/scripts/util.sh"
+
+# usage: usage ["printer"]
+usage() {
+  if [[ $# > 1 ]]; then
+    error_raw 'usage: too many arguments'
+    return 1
+  fi
+
+  local printer=${1:-print_raw}
+
+  ${printer} "usage: ${CURRENT_SCRIPT} [-h] [-n] [-t TAG]"
+}
+
+# usage: full_usage ["printer"]
+full_usage() {
+  if [[ $# > 1 ]]; then
+    error_raw 'full_usage: too many arguments'
+    return 1
+  fi
+
+  local printer=${1:-print_raw}
+
+  usage "${printer}"
+  ${printer}
+  ${printer} 'Build script for xtensa-lx106-elf development container'
+  ${printer}
+  ${printer} 'arguments:'
+  ${printer} '  -h                    show this help message and exit'
+  ${printer} '  -n                    don'"'"'t run docker and just print'
+  ${printer} '                        the command instead'
+  ${printer} '  -t TAG                the tag of the image to build'
+  ${printer}
+  ${printer} 'environment variables:'
+  ${printer} '  NAME                  the name of the image to build'
+  ${printer} '  TAG                   the tag of the image to build'
+  ${printer} '  SOURCE                the source directory of the image'
+  ${printer} '  DOCKER                the location of the docker binary'
+  ${printer}
+  ${printer} 'environment variables can be overridden by normal arguments'
+}
+
+# usage: build_image "name" "tag" "fake" "source"
+build_image() {
+  if [[ $# < 4 ]]; then
+    error_raw 'build_image: not enough arguments'
+    return 1
+  elif [[ $# > 4 ]]; then
+    error_raw 'build_image: too many arguments'
+    return 1
+  fi
+
+  local executor=run_docker
+
+  # Select an executor based on fake-ness
+  if [[ "$3" = 1 ]]; then
+    executor=fake_docker
+  elif [[ "$3" != 0 ]]; then
+    error_raw 'build_image: fake must be either 1 or 0'
+  fi
+
+  # Run docker with the provided arguments
+  ${executor} build -t "$1:$2" "$4"
+}
+
+# usage: main [-h] [TAG]
+main() {
+  local opt_fake=0
+  local opt_tag=${TAG}
+  local env_source=${SOURCE}
+
+  while getopts ':hn' OPT; do
+    case ${OPT} in
+      h) full_usage; return 0 ;;
+      n) opt_fake=1 ;;
+      t) opt_tag=${OPTARG} ;;
+      ?) error "illegal option: ${OPTARG}"; usage error_raw; return 1 ;;
+    esac
+  done
+
+  # Make the source path absolute if needed
+  if [[ "${SOURCE}" = "${DEFAULT_SOURCE}" ]]; then
+    env_source="${CURRENT_DIRECTORY}/${SOURCE}"
+  fi
+
+  # Ensure the source path is valid
+  if [[ "${env_source}" = "${env_source#/}" ]]; then
+    error 'source path must be absolute'
+    return 1
+  fi
+
+  # Check if any extra arguments were provided
+  if [[ $((OPTIND - 1)) != $# ]]; then
+    error 'too many arguments'
+    usage error_raw
+    return 1
+  fi
+
+  # Build the image
+  build_image "${NAME}" "${opt_tag}" "${opt_fake}" "${env_source}"
+}
+
+if [[ "$0" = "${BASH_SOURCE[0]}" ]]; then
+  main "$@"
+  exit $?
+fi

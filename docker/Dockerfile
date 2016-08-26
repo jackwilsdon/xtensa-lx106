@@ -1,4 +1,4 @@
-FROM phusion/baseimage:latest
+FROM phusion/baseimage:0.9.19
 
 MAINTAINER Jack Wilsdon <jack.wilsdon@gmail.com>
 

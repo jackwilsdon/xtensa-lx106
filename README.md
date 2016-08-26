@@ -57,7 +57,7 @@ You can change these options permanently inside `scripts/config.sh`.
 To run the container you can use the run script provided:
 
 ```Bash
-    ./run
+./run
 ```
 
 The run script also provides some options:

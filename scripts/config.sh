@@ -6,7 +6,7 @@
 readonly NAME=${NAME:-'jackwilsdon/xtensa-lx106-elf'}
 
 # The tag of the container being built
-readonly TAG=${TAG:-'0.1.0'}
+readonly TAG=${TAG:-'0.1.1'}
 
 # The default source directory of the container being built
 readonly DEFAULT_SOURCE='docker'

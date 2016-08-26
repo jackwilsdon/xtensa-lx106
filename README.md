@@ -41,13 +41,13 @@ environment variables can be overridden by normal arguments
 Here's an example of changing the name and tag of the build (e.g. if you were creating a custom build):
 
 ```Bash
-NAME="my-xtensa-lx106-elf" TAG="0.1.0" ./build
+NAME="my-xtensa-lx106-elf" TAG="custom" ./build
 ```
 
 You can also use the `-t TAG` option to pass a tag (this overrides the `TAG` environment variable):
 
 ```Bash
-NAME="my-xtensa-lx106-elf" ./build -t 0.1.0
+NAME="my-xtensa-lx106-elf" ./build -t custom
 ```
 
 You can change these options permanently inside `scripts/config.sh`.

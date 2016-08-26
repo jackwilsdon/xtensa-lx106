@@ -50,7 +50,7 @@ RUN su build -c " \
         mkdir -p /tmp/xtensa-lx106-elf-build && \
         cd /tmp/xtensa-lx106-elf-build && \
         ct-ng xtensa-lx106-elf && \
-        sed -i'' 's/^CT_DEBUG_gdb=y$/CT_GDB_CROSS=n/g' .config && \
+        sed -i'' 's/^CT_DEBUG_gdb=y$/CT_DEBUG_gdb=n/g' .config && \
         sed -i'' \
             's/^CT_PREFIX_DIR=.*$/CT_PREFIX_DIR=\"\/tmp\/xtensa-lx106-elf\"/g' \
             .config && \

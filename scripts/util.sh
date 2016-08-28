@@ -22,6 +22,14 @@ error_raw() {
   print_raw "$*" >&2
 }
 
+# usage: print_version_info "name" "tag" ["printer"]
+print_version_info() {
+  local printer=${3:-print_raw}
+
+  ${printer} "name \"$1\""
+  ${printer} "tag \"$2\""
+}
+
 # usage: docker [args...]
 run_docker() {
   "${DOCKER}" "$@"
@@ -34,7 +42,15 @@ run_docker() {
   fi
 }
 
-# usage: fake_docker [args...]
-fake_docker() {
-  print_raw "${DOCKER}" "$@"
+# usage: mock_run_docker function [args...]
+mock_run_docker() {
+  local original_run_docker=$(declare -f run_docker)
+
+  run_docker() {
+    print_raw "${DOCKER}" "$@"
+  }
+
+  $1 "$@"
+
+  eval "${original_run_docker}"
 }

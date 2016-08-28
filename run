@@ -44,28 +44,13 @@ full_usage() {
   ${printer} 'environment variables can be overridden by normal arguments'
 }
 
-# usage: version_info "name" "tag" ["printer"]
-version_info() {
-  local printer=${3:-print_raw}
-
-  ${printer} "name \"$1\""
-  ${printer} "tag \"$2\""
-}
-
-# usage: run_image "name" "tag" "fake" "mountpoint" args...
+# usage: run_image "name" "tag" "mountpoint" args...
 run_image() {
-  local executor=run_docker
-
-  # Select an executor based on fake-ness
-  if [[ "$3" = 1 ]]; then
-    executor=fake_docker
-  fi
-
   # Default run arguments
   local arguments=(--rm --interactive --tty)
 
   # Add volume to arguments if we need to
-  if [[ -n "$4" ]]; then
+  if [[ -n "$3" ]]; then
     arguments+=(-v "$4:/mnt/data")
   fi
 
@@ -74,7 +59,7 @@ run_image() {
 
   # Remove the first four arguments from the argument list so we're left with
   # just args
-  shift 4
+  shift 3
 
   # If there are any arguments left, add them to the command
   if [[ "$#" -gt 0 ]]; then
@@ -82,35 +67,35 @@ run_image() {
   fi
 
   # Run docker with the provided arguments
-  ${executor} run "${arguments[@]}"
+  run_docker run "${arguments[@]}"
 }
 
 # usage: main [-h] [TAG]
 main() {
-  local opt_version=0
-  local opt_fake=0
-  local opt_mount=${MOUNT}
-  local opt_tag=${TAG}
+  local print_version=0
+  local executor=run_image
+  local mount=${MOUNT}
+  local tag=${TAG}
 
   while getopts ':hvnd:t:' OPT; do
     case ${OPT} in
       h) full_usage; return 0 ;;
-      v) opt_version=1 ;;
-      n) opt_fake=1 ;;
-      d) opt_mount=${OPTARG} ;;
-      t) opt_tag=${OPTARG} ;;
+      v) print_version=1 ;;
+      n) executor="mock_run_docker run_image" ;;
+      d) mount=${OPTARG} ;;
+      t) tag=${OPTARG} ;;
       ?) error "illegal option: ${OPTARG}"; usage error_raw; return 1 ;;
     esac
   done
 
   # Print version if needed
-  if [[ "${opt_version}" = 1 ]]; then
-    version_info "${NAME}" "${opt_tag}"
+  if [[ "${print_version}" = 1 ]]; then
+    print_version_info "${NAME}" "${tag}"
     return 0
   fi
 
   # Ensure the mount point is valid
-  if [[ -n "${opt_mount}" && "${opt_mount}" = "${opt_mount#/}" ]]; then
+  if [[ -n "${mount}" && "${mount}" = "${mount#/}" ]]; then
     error 'mount point must be absolute'
     return 1
   fi
@@ -126,7 +111,7 @@ main() {
   shift $((OPTIND - 1))
 
   # Run the image
-  run_image "${NAME}" "${opt_tag}" "${opt_fake}" "${opt_mount}" "$@"
+  ${executor} "${NAME}" "${tag}" "${mount}" "$@"
 }
 
 if [[ "$0" = "${BASH_SOURCE[0]}" ]]; then

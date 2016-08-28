@@ -39,57 +39,43 @@ full_usage() {
   ${printer} 'environment variables can be overridden by normal arguments'
 }
 
-# usage: version_info "name" "tag" ["printer"]
-version_info() {
-  local printer=${3:-print_raw}
-
-  ${printer} "name \"$1\""
-  ${printer} "tag \"$2\""
-}
-
-# usage: build_image "name" "tag" "fake" "source"
+# usage: build_image "name" "tag" "source"
 build_image() {
-  local executor=run_docker
-
-  # Select an executor based on fake-ness
-  if [[ "$3" = 1 ]]; then
-    executor=fake_docker
-  fi
 
   # Run docker with the provided arguments
-  ${executor} build -t "$1:$2" "$4"
+  run_docker build -t "$1:$2" "$3"
 }
 
 # usage: main [-h] [TAG]
 main() {
-  local opt_version=0
-  local opt_fake=0
-  local opt_tag=${TAG}
-  local env_source=${SOURCE}
+  local print_version=0
+  local executor=build_image
+  local tag=${TAG}
+  local source_=${SOURCE}
 
   while getopts ':hvnt:' OPT; do
     case ${OPT} in
       h) full_usage; return 0 ;;
-      v) opt_version=1 ;;
-      n) opt_fake=1 ;;
-      t) opt_tag=${OPTARG} ;;
+      v) print_version=1 ;;
+      n) executor="mock_run_docker build_image" ;;
+      t) tag=${OPTARG} ;;
       ?) error "illegal option: ${OPTARG}"; usage error_raw; return 1 ;;
     esac
   done
 
   # Print version if needed
-  if [[ "${opt_version}" = 1 ]]; then
-    version_info "${NAME}" "${opt_tag}"
+  if [[ "${print_version}" = 1 ]]; then
+    print_version_info "${NAME}" "${tag}"
     return 0
   fi
 
   # Make the source path absolute if needed
   if [[ "${SOURCE}" = "${DEFAULT_SOURCE}" ]]; then
-    env_source="${CURRENT_DIRECTORY}/${SOURCE}"
+    source_="${CURRENT_DIRECTORY}/${SOURCE}"
   fi
 
   # Ensure the source path is valid
-  if [[ "${env_source}" = "${env_source#/}" ]]; then
+  if [[ "${source_}" = "${source_#/}" ]]; then
     error 'source path must be absolute'
     return 1
   fi
@@ -102,7 +88,7 @@ main() {
   fi
 
   # Build the image
-  build_image "${NAME}" "${opt_tag}" ${env_source}"
+  ${executor} "${NAME}" "${tag}" "${source_}"
 }
 
 if [[ "$0" = "${BASH_SOURCE[0]}" ]]; then

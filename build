@@ -36,8 +36,8 @@ full_usage() {
   ${printer} 'arguments:'
   ${printer} '  -h                    show this help message and exit'
   ${printer} '  -v                    show version information and exit'
-  ${printer} '  -n                    don'"'"'t run docker and just print'
-  ${printer} '                        the command instead'
+  ${printer} '  -n                    don'"'"'t run docker and just print the'
+  ${printer} '                        command instead'
   ${printer} '  -t TAG                the tag of the image to build'
   ${printer}
   ${printer} 'environment variables:'

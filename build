@@ -77,7 +77,7 @@ main() {
   local opt_tag=${TAG}
   local env_source=${SOURCE}
 
-  while getopts ':hn' OPT; do
+  while getopts ':hnt:' OPT; do
     case ${OPT} in
       h) full_usage; return 0 ;;
       n) opt_fake=1 ;;

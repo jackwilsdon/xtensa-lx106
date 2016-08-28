@@ -10,11 +10,6 @@ source "${CURRENT_DIRECTORY}/scripts/util.sh"
 
 # usage: usage ["printer"]
 usage() {
-  if [[ $# > 1 ]]; then
-    error_raw 'usage: too many arguments'
-    return 1
-  fi
-
   local printer=${1:-print_raw}
 
   ${printer} "usage: ${CURRENT_SCRIPT} [-h] [-n] [-t TAG]"
@@ -22,11 +17,6 @@ usage() {
 
 # usage: full_usage ["printer"]
 full_usage() {
-  if [[ $# > 1 ]]; then
-    error_raw 'full_usage: too many arguments'
-    return 1
-  fi
-
   local printer=${1:-print_raw}
 
   usage "${printer}"
@@ -59,21 +49,11 @@ version_info() {
 
 # usage: build_image "name" "tag" "fake" "source"
 build_image() {
-  if [[ $# < 4 ]]; then
-    error_raw 'build_image: not enough arguments'
-    return 1
-  elif [[ $# > 4 ]]; then
-    error_raw 'build_image: too many arguments'
-    return 1
-  fi
-
   local executor=run_docker
 
   # Select an executor based on fake-ness
   if [[ "$3" = 1 ]]; then
     executor=fake_docker
-  elif [[ "$3" != 0 ]]; then
-    error_raw 'build_image: fake must be either 1 or 0'
   fi
 
   # Run docker with the provided arguments
@@ -122,7 +102,7 @@ main() {
   fi
 
   # Build the image
-  build_image "${NAME}" "${opt_tag}" "${opt_fake}" "${env_source}"
+  build_image "${NAME}" "${opt_tag}" ${env_source}"
 }
 
 if [[ "$0" = "${BASH_SOURCE[0]}" ]]; then

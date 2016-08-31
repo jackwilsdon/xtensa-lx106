@@ -2,20 +2,14 @@
 #
 # Configuration for xtensa-lx106-elf container management scripts
 
-# The name of the container being built
-readonly NAME=${NAME:-'jackwilsdon/xtensa-lx106-elf'}
+# The default name of the container being built
+readonly DEFAULT_NAME='jackwilsdon/xtensa-lx106-elf'
 
-# The tag of the container being built
-readonly TAG=${TAG:-'0.1.3.dev0'}
+# The default tag of the container being built
+readonly DEFAULT_TAG='0.1.3.dev0'
 
 # The default source directory of the container being built
 readonly DEFAULT_SOURCE='docker'
 
-# The source directory of the container being built
-readonly SOURCE=${SOURCE:-${DEFAULT_SOURCE}}
-
-# The mount directory for the container being built
-readonly MOUNT=${MOUNT:-''}
-
-# Location of the docker binary
-readonly DOCKER=${DOCKER:-$(command -v docker)}
+# The default location of the docker binary
+readonly DEFAULT_DOCKER=$(command -v docker)

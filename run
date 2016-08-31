@@ -10,6 +10,7 @@ fi
 
 readonly SCRIPT_NAME=$(basename -- "${BASH_SOURCE[0]}")
 readonly BASE_DIRECTORY=$(cd "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+readonly CURRENT_DIRECTORY=$(pwd)
 
 source "${BASE_DIRECTORY}/scripts/config.sh"
 source "${BASE_DIRECTORY}/scripts/util.sh"
@@ -41,29 +42,30 @@ full_usage() {
   ${printer} 'environment variables:'
   ${printer} '  NAME                  the name of the container to run'
   ${printer} '  TAG                   the tag of the container'
-  ${printer} '  MOUNT                 the mount point for /mnt/data inside the'
-  ${printer} '                        container'
   ${printer} '  DOCKER                the location of the docker binary'
   ${printer}
   ${printer} 'environment variables can be overridden by normal arguments'
 }
 
-# usage: run_image "name" "tag" "mountpoint" args...
-run_image() {
+# usage: run_container "docker" "name" "tag" "mountpoint" args...
+run_container() {
+  # Docker binary
+  local docker=$1
+
   # Default run arguments
   local arguments=(--rm --interactive --tty)
 
   # Add volume to arguments if we need to
-  if [[ -n "$3" ]]; then
-    arguments+=(-v "$4:/mnt/data")
+  if [[ -n "$4" ]]; then
+    arguments+=(-v "$5:/mnt/data")
   fi
 
   # Add name to arguments
-  arguments+=("$1:$2")
+  arguments+=("$2:$3")
 
   # Remove the first four arguments from the argument list so we're left with
   # just args
-  shift 3
+  shift 4
 
   # If there are any arguments left, add them to the command
   if [[ "$#" -gt 0 ]]; then
@@ -71,37 +73,38 @@ run_image() {
   fi
 
   # Run docker with the provided arguments
-  run_docker run "${arguments[@]}"
+  safe_execute "${docker}" run "${arguments[@]}"
 }
 
 # usage: main [-h] [-v] [-n] [-d DATA_DIRECTORY] [-t TAG] ARGS...
 main() {
   local print_version=0
-  local executor=run_image
-  local mount=${MOUNT}
-  local tag=${TAG}
+
+  local run_docker=${DOCKER:-${DEFAULT_DOCKER}}
+  local run_name=${NAME:-${DEFAULT_NAME}}
+  local run_tag=${TAG:-${DEFAULT_TAG}}
+  local run_mount=
 
   while getopts ':hvnd:t:' OPT; do
     case ${OPT} in
       h) full_usage; return 0 ;;
       v) print_version=1 ;;
-      n) executor="mock_run_docker run_image" ;;
-      d) mount=${OPTARG} ;;
-      t) tag=${OPTARG} ;;
+      n) run_docker="print_raw ${run_docker}" ;;
+      d) run_mount=${OPTARG} ;;
+      t) run_tag=${OPTARG} ;;
       ?) error "illegal option: ${OPTARG}"; usage error_raw; return 1 ;;
     esac
   done
 
   # Print version if needed
   if [[ "${print_version}" = 1 ]]; then
-    print_version_info "${NAME}" "${tag}"
+    print_version_info "${run_name}" "${run_tag}"
     return 0
   fi
 
   # Ensure the mount point is valid
-  if [[ -n "${mount}" && "${mount}" = "${mount#/}" ]]; then
-    error 'mount point must be absolute'
-    return 1
+  if [[ -n "${run_mount}" && "${run_mount}" = "${run_mount#/}" ]]; then
+    run_mount=${CURRENT_DIRECTORY}/${run_mount}
   fi
 
   # Check whether or not COMMAND was provided
@@ -115,7 +118,7 @@ main() {
   shift $((OPTIND - 1))
 
   # Run the image
-  ${executor} "${NAME}" "${tag}" "${mount}" "$@"
+  run_container "${run_docker}" "${run_name}" "${run_tag}" "${run_mount}" "$@"
 }
 
 main "$@"

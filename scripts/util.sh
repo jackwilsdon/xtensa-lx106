@@ -34,27 +34,14 @@ print_version_info() {
   ${printer} "tag \"$2\""
 }
 
-# usage: docker [args...]
-run_docker() {
-  "${DOCKER}" "$@"
+# usage: safe_execute "binary" [args...]
+safe_execute() {
+  $1 "${@:2}"
 
   local exit_code=$?
 
   if [[ "${exit_code}" -ne 0 ]]; then
-    error "${DOCKER} exited with code ${exit_code}"
+    error "$1 exited with code ${exit_code}"
     return 1
   fi
-}
-
-# usage: mock_run_docker function [args...]
-mock_run_docker() {
-  local original_run_docker=$(declare -f run_docker)
-
-  run_docker() {
-    print_raw "${DOCKER}" "$@"
-  }
-
-  $1 "$@"
-
-  eval "${original_run_docker}"
 }

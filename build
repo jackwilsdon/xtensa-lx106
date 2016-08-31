@@ -10,6 +10,7 @@ fi
 
 readonly SCRIPT_NAME=$(basename -- "${BASH_SOURCE[0]}")
 readonly BASE_DIRECTORY=$(cd "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+readonly CURRENT_DIRECTORY=$(pwd)
 
 source "${BASE_DIRECTORY}/scripts/config.sh"
 source "${BASE_DIRECTORY}/scripts/util.sh"
@@ -43,25 +44,26 @@ full_usage() {
   ${printer} 'environment variables can be overridden by normal arguments'
 }
 
-# usage: build_image "name" "tag" "source"
-build_image() {
-
+# usage: build_container "docker" "name" "tag" "source"
+build_container() {
   # Run docker with the provided arguments
-  run_docker build -t "$1:$2" "$3"
+  safe_execute "$1" build -t "$2:$3" "$4"
 }
 
 # usage: main [-h] [-v] [-n] [-t TAG]
 main() {
   local print_version=0
-  local executor=build_image
-  local tag=${TAG}
-  local source_=${SOURCE}
+
+  local build_docker=${DOCKER:-${DEFAULT_DOCKER}}
+  local build_name=${NAME:-${DEFAULT_NAME}}
+  local build_tag=${TAG:-${DEFAULT_TAG}}
+  local build_source=
 
   while getopts ':hvnt:' OPT; do
     case ${OPT} in
       h) full_usage; return 0 ;;
       v) print_version=1 ;;
-      n) executor="mock_run_docker build_image" ;;
+      n) build_docker="print_raw ${build_docker}" ;;
       t) tag=${OPTARG} ;;
       ?) error "illegal option: ${OPTARG}"; usage error_raw; return 1 ;;
     esac
@@ -73,15 +75,19 @@ main() {
     return 0
   fi
 
-  # Make the source path absolute if needed
-  if [[ "${SOURCE}" = "${DEFAULT_SOURCE}" ]]; then
-    source_="${BASE_DIRECTORY}/${SOURCE}"
-  fi
-
   # Ensure the source path is valid
-  if [[ "${source_}" = "${source_#/}" ]]; then
-    error 'source path must be absolute'
-    return 1
+  if [[ -n "${SOURCE}" ]]; then
+    if [[ "${SOURCE}" = "${SOURCE#/}" ]]; then
+      build_source="${CURRENT_DIRECTORY}/${SOURCE}"
+    else
+      build_source="${SOURCE}"
+    fi
+  else
+    if [[ "${DEFAULT_SOURCE}" = "${DEFAULT_SOURCE#/}" ]]; then
+      build_source="${CURRENT_DIRECTORY}/${DEFAULT_SOURCE}"
+    else
+      build_source="${DEFAULT_SOURCE}"
+    fi
   fi
 
   # Check if any extra arguments were provided
@@ -92,7 +98,8 @@ main() {
   fi
 
   # Build the image
-  ${executor} "${NAME}" "${tag}" "${source_}"
+  build_container "${build_docker}" "${build_name}" "${build_tag}" \
+                  "${build_source}"
 }
 
 main "$@"

@@ -118,7 +118,5 @@ main() {
   ${executor} "${NAME}" "${tag}" "${mount}" "$@"
 }
 
-if [[ "$0" = "${BASH_SOURCE[0]}" ]]; then
-  main "$@"
-  exit $?
-fi
+main "$@"
+exit $?

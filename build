@@ -95,7 +95,5 @@ main() {
   ${executor} "${NAME}" "${tag}" "${source_}"
 }
 
-if [[ "$0" = "${BASH_SOURCE[0]}" ]]; then
-  main "$@"
-  exit $?
-fi
+main "$@"
+exit $?

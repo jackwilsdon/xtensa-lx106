@@ -37,11 +37,8 @@ full_usage() {
   ${printer}
   ${printer} 'environment variables:'
   ${printer} '  NAME                  the name of the image to build'
-  ${printer} '  TAG                   the tag of the image to build'
   ${printer} '  SOURCE                the source directory of the image'
   ${printer} '  DOCKER                the location of the docker binary'
-  ${printer}
-  ${printer} 'environment variables can be overridden by normal arguments'
 }
 
 # usage: build_container "docker" "name" "tag" "source"
@@ -56,7 +53,7 @@ main() {
 
   local build_docker=${DOCKER:-${DEFAULT_DOCKER}}
   local build_name=${NAME:-${DEFAULT_NAME}}
-  local build_tag=${TAG:-${DEFAULT_TAG}}
+  local build_tag=${DEFAULT_TAG}
   local build_source=
 
   while getopts ':hvnt:' OPT; do

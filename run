@@ -41,10 +41,7 @@ full_usage() {
   ${printer}
   ${printer} 'environment variables:'
   ${printer} '  NAME                  the name of the container to run'
-  ${printer} '  TAG                   the tag of the container'
   ${printer} '  DOCKER                the location of the docker binary'
-  ${printer}
-  ${printer} 'environment variables can be overridden by normal arguments'
 }
 
 # usage: run_container "docker" "name" "tag" "mountpoint" args...
@@ -82,7 +79,7 @@ main() {
 
   local run_docker=${DOCKER:-${DEFAULT_DOCKER}}
   local run_name=${NAME:-${DEFAULT_NAME}}
-  local run_tag=${TAG:-${DEFAULT_TAG}}
+  local run_tag=${DEFAULT_TAG}
   local run_mount=
 
   while getopts ':hvnd:t:' OPT; do

@@ -50,7 +50,7 @@ build_image() {
   run_docker build -t "$1:$2" "$3"
 }
 
-# usage: main [-h] [TAG]
+# usage: main [-h] [-v] [-n] [-t TAG]
 main() {
   local print_version=0
   local executor=build_image

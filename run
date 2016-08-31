@@ -74,7 +74,7 @@ run_image() {
   run_docker run "${arguments[@]}"
 }
 
-# usage: main [-h] [TAG]
+# usage: main [-h] [-v] [-n] [-d DATA_DIRECTORY] [-t TAG] ARGS...
 main() {
   local print_version=0
   local executor=run_image

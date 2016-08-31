@@ -4,7 +4,11 @@
 
 # usage: print [args...]
 print() {
-  echo "${CURRENT_SCRIPT}: $*"
+  if [[ -n "${SCRIPT_NAME}" ]]; then
+    echo "${SCRIPT_NAME}: $*"
+  else
+    echo "$*"
+  fi
 }
 
 # usage: print_raw [args...]

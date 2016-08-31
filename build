@@ -2,6 +2,12 @@
 #
 # Build xtensa-lx106-elf container
 
+if [[ "$0" != "${BASH_SOURCE[0]}" ]]; then
+  echo "$(basename -- "${BASH_SOURCE[0]}"): error:" \
+       'script must not be sourced' >&2
+  return 1
+fi
+
 readonly SCRIPT_NAME=$(basename -- "${BASH_SOURCE[0]}")
 readonly BASE_DIRECTORY=$(cd "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 

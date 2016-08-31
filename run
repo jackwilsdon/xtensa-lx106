@@ -2,18 +2,16 @@
 #
 # Run xtensa-lx106-elf container
 
-readonly CURRENT_SCRIPT=$(basename -- "${BASH_SOURCE[0]}")
-readonly CURRENT_DIRECTORY=$(cd "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+readonly SCRIPT_NAME=$(basename -- "${BASH_SOURCE[0]}")
+readonly BASE_DIRECTORY=$(cd "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 
-source "${CURRENT_DIRECTORY}/scripts/config.sh"
-source "${CURRENT_DIRECTORY}/scripts/util.sh"
+source "${BASE_DIRECTORY}/scripts/config.sh"
+source "${BASE_DIRECTORY}/scripts/util.sh"
 
 # usage: usage ["printer"]
 usage() {
-  local printer=${1:-print_raw}
-
-  ${printer} "usage: ${CURRENT_SCRIPT} [-h] [-n] [-d DATA_DIRECTORY]" \
-             '[-t TAG] ARGS...'
+  ${1:-print_raw} "usage: ${SCRIPT_NAME} [-h] [-n] [-d DATA_DIRECTORY]" \
+                  '[-t TAG] ARGS...'
 }
 
 # usage: full_usage ["printer"]

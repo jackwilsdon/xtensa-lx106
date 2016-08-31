@@ -54,7 +54,7 @@ run_container() {
 
   # Add volume to arguments if we need to
   if [[ -n "$4" ]]; then
-    arguments+=(-v "$5:/mnt/data")
+    arguments+=(-v "$4:/mnt/data")
   fi
 
   # Add name to arguments

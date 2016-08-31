@@ -10,7 +10,7 @@ source "${BASE_DIRECTORY}/scripts/util.sh"
 
 # usage: usage ["printer"]
 usage() {
-  ${1:-print_raw} "usage: ${SCRIPT_NAME} [-h] [-n] [-d DATA_DIRECTORY]" \
+  ${1:-print_raw} "usage: ${SCRIPT_NAME} [-h] [-v] [-n] [-d DATA_DIRECTORY]" \
                   '[-t TAG] ARGS...'
 }
 

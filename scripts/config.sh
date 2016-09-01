@@ -6,7 +6,7 @@
 readonly DEFAULT_NAME='jackwilsdon/xtensa-lx106-elf'
 
 # The default tag of the container being built
-readonly DEFAULT_TAG='0.1.3.dev0'
+readonly DEFAULT_TAG='0.1.3'
 
 # The default source directory of the container being built
 readonly DEFAULT_SOURCE='docker'

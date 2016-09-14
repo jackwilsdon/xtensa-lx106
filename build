@@ -61,7 +61,7 @@ main() {
       h) full_usage; return 0 ;;
       v) print_version=1 ;;
       n) build_docker="print_raw ${build_docker}" ;;
-      t) tag=${OPTARG} ;;
+      t) build_tag=${OPTARG} ;;
       ?) error "illegal option: ${OPTARG}"; usage error_raw; return 1 ;;
     esac
   done

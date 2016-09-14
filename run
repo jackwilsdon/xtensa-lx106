@@ -44,35 +44,6 @@ full_usage() {
   ${printer} '  DOCKER                the location of the docker binary'
 }
 
-# usage: run_container "docker" "name" "tag" "mountpoint" args...
-run_container() {
-  # Docker binary
-  local docker=$1
-
-  # Default run arguments
-  local arguments=(--rm --interactive --tty)
-
-  # Add volume to arguments if we need to
-  if [[ -n "$4" ]]; then
-    arguments+=(-v "$4:/mnt/data")
-  fi
-
-  # Add name to arguments
-  arguments+=("$2:$3")
-
-  # Remove the first four arguments from the argument list so we're left with
-  # just args
-  shift 4
-
-  # If there are any arguments left, add them to the command
-  if [[ "$#" -gt 0 ]]; then
-    arguments+=("$@")
-  fi
-
-  # Run docker with the provided arguments
-  safe_execute "${docker}" run "${arguments[@]}"
-}
-
 # usage: main [-h] [-v] [-n] [-d DATA_DIRECTORY] [-t TAG] ARGS...
 main() {
   local print_version=0
@@ -114,8 +85,19 @@ main() {
   # Remove everything leading up to COMMAND argument
   shift $((OPTIND - 1))
 
+  # Arguments for running docker
+  local run_arguments=(--rm --interactive --tty)
+
+  # Add mount point to arguments if needed
+  if [[ -n "${run_mount}" ]]; then
+    run_arguments+=(-v "${run_mount}:/mnt/data")
+  fi
+
+  # Add name and remaining arguments to arguments
+  run_arguments+=("${run_name}:${run_tag}" "$@")
+
   # Run the image
-  run_container "${run_docker}" "${run_name}" "${run_tag}" "${run_mount}" "$@"
+  safe_execute "${run_docker}" run "${run_arguments[@]}"
 }
 
 main "$@"

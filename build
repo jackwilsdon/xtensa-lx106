@@ -41,12 +41,6 @@ full_usage() {
   ${printer} '  DOCKER                the location of the docker binary'
 }
 
-# usage: build_container "docker" "name" "tag" "source"
-build_container() {
-  # Run docker with the provided arguments
-  safe_execute "$1" build -t "$2:$3" "$4"
-}
-
 # usage: main [-h] [-v] [-n] [-t TAG]
 main() {
   local print_version=0
@@ -95,8 +89,8 @@ main() {
   fi
 
   # Build the image
-  build_container "${build_docker}" "${build_name}" "${build_tag}" \
-                  "${build_source}"
+  safe_execute "${build_docker}" build -t "${build_name}:${build_tag}" \
+               "${build_source}"
 }
 
 main "$@"

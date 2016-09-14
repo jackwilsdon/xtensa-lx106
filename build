@@ -62,7 +62,7 @@ main() {
 
   # Print version if needed
   if [[ "${print_version}" = 1 ]]; then
-    print_version_info "${NAME}" "${tag}"
+    print_version_info "${build_name}" "${build_tag}"
     return 0
   fi
 

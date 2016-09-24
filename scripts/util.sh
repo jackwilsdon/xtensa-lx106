@@ -45,3 +45,14 @@ safe_execute() {
     return 1
   fi
 }
+
+# usage: make_absolute "root" "path"
+make_absolute() {
+  if [[ -n "$2" ]]; then
+    if [[ "$2" = "${2#/}" ]]; then
+      echo "$1/$2"
+    else
+      echo "$2"
+    fi
+  fi
+}

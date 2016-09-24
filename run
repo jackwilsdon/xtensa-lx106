@@ -71,9 +71,7 @@ main() {
   fi
 
   # Ensure the mount point is valid
-  if [[ -n "${run_mount}" && "${run_mount}" = "${run_mount#/}" ]]; then
-    run_mount=${CURRENT_DIRECTORY}/${run_mount}
-  fi
+  run_mount=$(make_absolute "${CURRENT_DIRECTORY}" "${run_mount}")
 
   # Check whether or not COMMAND was provided
   if [[ $((OPTIND - 1)) = $# ]]; then

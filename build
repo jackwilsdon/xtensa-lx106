@@ -67,19 +67,8 @@ main() {
   fi
 
   # Ensure the source path is valid
-  if [[ -n "${SOURCE}" ]]; then
-    if [[ "${SOURCE}" = "${SOURCE#/}" ]]; then
-      build_source="${CURRENT_DIRECTORY}/${SOURCE}"
-    else
-      build_source="${SOURCE}"
-    fi
-  else
-    if [[ "${DEFAULT_SOURCE}" = "${DEFAULT_SOURCE#/}" ]]; then
-      build_source="${CURRENT_DIRECTORY}/${DEFAULT_SOURCE}"
-    else
-      build_source="${DEFAULT_SOURCE}"
-    fi
-  fi
+  build_source=$(make_absolute "${CURRENT_DIRECTORY}"
+                               "${SOURCE:-${DEFAULT_SOURCE}}")
 
   # Check if any extra arguments were provided
   if [[ $((OPTIND - 1)) != $# ]]; then

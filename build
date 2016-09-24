@@ -9,7 +9,7 @@ if [[ "$0" != "${BASH_SOURCE[0]}" ]]; then
 fi
 
 readonly SCRIPT_NAME=$(basename -- "${BASH_SOURCE[0]}")
-readonly BASE_DIRECTORY=$(cd "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+readonly BASE_DIRECTORY=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 readonly CURRENT_DIRECTORY=$(pwd)
 
 source "${BASE_DIRECTORY}/scripts/config.sh"
